@@ -17,10 +17,11 @@
             overflow: hidden;
         }
         video {
-            height: 100%;
-            width: 100%;
-            object-fit: cover;
-            position: absolute;
+            border: 2px solid #ccc;
+            height: 100vh; /* Full height */
+            width: 100vw; /* Full width */
+            object-fit: contain; /* Maintain aspect ratio without zooming */
+            position: absolute; /* Position it to the top */
             top: 0;
             left: 0;
         }
