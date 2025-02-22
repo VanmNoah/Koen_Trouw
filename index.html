@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Camera Capture and Upload</title>
+    <title>Camera App</title>
     <script src="https://static.filestackapi.com/v3/filestack.js"></script>
     <style>
         body {
@@ -13,7 +13,7 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #000;
             overflow: hidden;
         }
         video {
@@ -33,10 +33,10 @@
             border: none;
             cursor: pointer;
             font-size: 30px;
-            color: #007bff;
+            color: #fff;
         }
         .icon-button:hover {
-            color: #0056b3;
+            color: #ccc;
         }
         button {
             position: absolute;
@@ -45,14 +45,19 @@
             transform: translateX(-50%);
             padding: 10px 20px;
             font-size: 18px;
-            background-color: #007bff;
-            color: white;
+            background-color: #fff;
+            color: #000;
             border: none;
-            border-radius: 5px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #ccc;
         }
         canvas {
             display: none;
@@ -61,9 +66,9 @@
 </head>
 <body>
     <video id="video" autoplay></video>
-    <button id="capture">Capture Photo</button>
+    <button id="capture"> </button>
     <canvas id="canvas"></canvas>
-    <button class="icon-button" id="switchCamera">➡️</button>
+    <button class="icon-button" id="switchCamera"> </button>
 
     <script>
         const video = document.getElementById('video');
@@ -84,7 +89,11 @@
         async function startCamera(deviceId) {
             const constraints = {
                 video: {
-                    deviceId: { exact: deviceId }
+                    deviceId: { exact: deviceId },
+                    facingMode: { ideal: 'environment' },
+                    aspectRatio: { ideal: 1.7777777777777777 },
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
                 }
             };
             try {
@@ -95,14 +104,18 @@
             }
         }
 
-        switchCameraButton.addEventListener('click', () => {
+        switchCameraButton.addEventListener('click', switchCamera);
+
+        document.getElementById('capture').addEventListener('click', captureImage);
+
+        async function switchCamera() {
             if (videoDevices.length > 0) {
                 currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
                 startCamera(videoDevices[currentCameraIndex].deviceId);
             }
-        });
+        }
 
-        document.getElementById('capture').addEventListener('click', () => {
+        async function captureImage() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
@@ -120,10 +133,9 @@
                         alert('Er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
                     });
             }, 'image/png');
-        });
+        }
 
         getVideoDevices();
     </script>
 </body>
 </html>
-
