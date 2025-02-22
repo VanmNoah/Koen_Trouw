@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // Set up storage for uploaded images
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads/'); // Directory to save uploaded files
+        cb(null, 'uploads/'); // Directory to save uploaded files
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname)); // Rename file to avoid conflicts
