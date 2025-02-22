@@ -5,40 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Camera App</title>
     <script src="https://static.filestackapi.com/v3/filestack.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        video {
+            height: auto;
+            width: 100%;
+            object-fit: cover;
+        }
+        .icon-button {
+            position: absolute;
+            left: 90%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            color: #fff;
+        }
+        .icon-button:hover {
+            color: #ccc;
+        }
+        button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button:hover {
+            background-color: #ccc;
+        }
+        .camera-interface {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .camera-interface button {
+            margin: 0 20px;
+        }
+    </style>
 </head>
 <body>
-    <script>
-        const client = filestack.init('AOo7L2NQUeXoewwx1v7cAz');
+    <video id="video" autoplay></video>
+    <div class="camera-interface">
+        <button id="capture">&#x1f4f7;</button>
+        <button class="icon-button" id="switchCamera">&#x1f500;</button>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    const video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.play();
-                    video.addEventListener('canplay', () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        const context = canvas.getContext('2d');
-                        context.drawImage(video, 0, 0);
-                        canvas.toBlob(blob => {
-                            const file = new File([blob], 'captured-image.png', { type: 'image/png' });
-                            client.upload(file)
-                                .then(response => {
-                                    console.log('Upload successful:', response);
-                                })
-                                .catch(error => {
-                                    console.error('Upload failed:', error);
-                                });
-                        }, 'image/png');
-                    });
-                })
-                .catch(error => {
-                    console.error('Error accessing webcam: ', error);
-                });
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const client = filestack.init('AOo7L2NQUeXoewwx1v7cAz');
+        const switchCameraButton = document.getElementById('switchCamera');
+        let videoDevices = [];
+        let currentCameraIndex = 0;
+
+        async function getVideoDevices() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+            if (videoDevices.length > 0) {
+                startCamera(videoDevices[currentCameraIndex].deviceId);
+            }
         }
+
+        async function startCamera(deviceId) {
+            const constraints = {
+                video: {
+                    deviceId: { exact: deviceId },
+                    facingMode: { ideal: 'environment' },
+                    aspectRatio: { ideal: 1.7777777777777777 },
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
+            };
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing webcam: ', error);
+            }
+        }
+
+        switchCameraButton.addEventListener('click', switchCamera);
+
+        document.getElementById('capture').addEventListener('click', captureImage);
+
+        async function switchCamera() {
+            if (videoDevices.length > 0) {
+                currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
+                startCamera(videoDevices[currentCameraIndex].deviceId);
+            }
+        }
+
+        async function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0);
+
+            canvas.toBlob(blob => {
+                const file = new File([blob], 'captured-image.png', { type: 'image/png' });
+
+                client.upload(file)
+                    .then(response => {
+                        console.log('Upload successful:', response);
+                        alert('De foto is succesvol geupload! De fotos worden achteraf met iedereen gedeeld.');
+                    })
+                    .catch(error => {
+                        console.error('Upload failed:', error);
+                        alert('Er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
+                    });
+            }, 'image/png');
+        }
+
+        getVideoDevices();
     </script>
 </body>
 </html>
-
