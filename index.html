@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Camera Capture and Upload</title>
     <script src="https://static.filestackapi.com/v3/filestack.js"></script>
     <style>
@@ -36,7 +36,7 @@
             color: #007bff;
         }
         .icon-button:hover {
-            color: #0056b3; /* Darker blue on hover */
+            color: #0056b3;
         }
         button {
             position: absolute;
@@ -52,10 +52,10 @@
             cursor: pointer;
         }
         button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
+            background-color: #0056b3;
         }
         canvas {
-            display: none; /* Hide the canvas */
+            display: none;
         }
     </style>
 </head>
@@ -63,7 +63,7 @@
     <video id="video" autoplay></video>
     <button id="capture">Capture Photo</button>
     <canvas id="canvas"></canvas>
-    <button class="icon-button" id="switchCamera">➡️</button> <!-- Arrow icon for switching cameras -->
+    <button class="icon-button" id="switchCamera">➡️</button>
 
     <script>
         const video = document.getElementById('video');
@@ -73,17 +73,14 @@
         let videoDevices = [];
         let currentCameraIndex = 0;
 
-        // Function to get video devices
         async function getVideoDevices() {
             const devices = await navigator.mediaDevices.enumerateDevices();
             videoDevices = devices.filter(device => device.kind === 'videoinput');
-
             if (videoDevices.length > 0) {
                 startCamera(videoDevices[currentCameraIndex].deviceId);
             }
         }
 
-        // Access the camera
         async function startCamera(deviceId) {
             const constraints = {
                 video: {
@@ -98,26 +95,22 @@
             }
         }
 
-        // Switch to the next camera when the button is clicked
         switchCameraButton.addEventListener('click', () => {
             if (videoDevices.length > 0) {
-                currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length; // Cycle through cameras
+                currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
                 startCamera(videoDevices[currentCameraIndex].deviceId);
             }
         });
 
-        // Capture photo when button is clicked
         document.getElementById('capture').addEventListener('click', () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0);
 
-            // Convert the image to Blob
             canvas.toBlob(blob => {
                 const file = new File([blob], 'captured-image.png', { type: 'image/png' });
 
-                // Upload to Filestack
                 client.upload(file)
                     .then(response => {
                         alert('De foto is succesvol geupload! De fotos worden achteraf met iedereen gedeeld.');
@@ -129,8 +122,8 @@
             }, 'image/png');
         });
 
-        // Get video devices when the page loads
         getVideoDevices();
     </script>
 </body>
 </html>
+
