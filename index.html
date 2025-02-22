@@ -23,36 +23,50 @@
         }
         .icon-button {
             position: absolute;
-            left: 90%;
+            right: 10px;
             background: none;
             border: none;
             cursor: pointer;
             font-size: 30px;
             color: #fff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .icon-button:hover {
-            color: #ccc;
+        .icon-button:before {
+            content: "\21bb"; /* Unicode for a clockwise open circle arrow */
         }
-        button {
+        .icon-button:active {
+            animation: rotate 0.5s linear forwards;
+        }
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #capture{
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #fff;
-            color: #000;
-            border: none;
-            border-radius: 50%;
             width: 60px;
             height: 60px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            background-color: transparent;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        button:hover {
-            background-color: #ccc;
+        #capture:active {
+            background-color: #fff;
         }
         .camera-interface {
             position: absolute;
@@ -73,8 +87,8 @@
 <body>
     <video id="video" autoplay></video>
     <div class="camera-interface">
-        <button id="capture">&#x1f4f7;</button>
-        <button class="icon-button" id="switchCamera">&#x1f500;</button>
+        <button id="capture"></button>
+        <button class="icon-button" id="switchCamera"></button>
     </div>
     <canvas id="canvas" style="display:none;"></canvas>
 
@@ -116,10 +130,14 @@
 
         document.getElementById('capture').addEventListener('click', captureImage);
 
+        let switching = false;
         async function switchCamera() {
-            if (videoDevices.length > 0) {
+            if (videoDevices.length > 0 && !switching) {
+                switching = true;
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
-                startCamera(videoDevices[currentCameraIndex].deviceId);
+                await startCamera(videoDevices[currentCameraIndex].deviceId);
+                switching = false;
             }
         }
 
