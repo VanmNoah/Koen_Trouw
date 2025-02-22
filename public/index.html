@@ -1,0 +1,68 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Maker and Uploader</title>
+    <style>
+        #camera {
+            display: none; /* Hide the video element initially */
+        }
+    </style>
+</head>
+<body>
+    <h1>Photo Maker and Uploader</h1>
+    <video id="camera" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <button id="takePhotoButton">Take Photo</button>
+    <div id="status"></div>
+
+    <script>
+        // Access the camera and display it in the video element
+        const video = document.getElementById('camera');
+        const canvas = document.getElementById('canvas');
+        const takePhotoButton = document.getElementById('takePhotoButton');
+        const statusDiv = document.getElementById('status');
+
+        // Start video stream
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+                video.style.display = 'block'; // Show the video element
+            })
+            .catch((err) => {
+                console.error("Error accessing the camera: ", err);
+                statusDiv.innerText = "Unable to access camera. Please check permissions.";
+            });
+
+        // Capture photo and upload it
+        takePhotoButton.addEventListener('click', function() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height); // Draw the video frame to the canvas
+
+            // Convert canvas to a blob and upload it
+            canvas.toBlob((blob) => {
+                const formData = new FormData();
+                formData.append('image', blob, 'photo.jpg'); // Append the photo to the FormData
+
+                // Send the image blob to the server
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.text())
+                .then(text => {
+                    statusDiv.innerText = text; // Display upload status
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusDiv.innerText = 'Error uploading photo.';
+                });
+            }, 'image/jpeg');
+        });
+    </script>
+</body>
+</html>
