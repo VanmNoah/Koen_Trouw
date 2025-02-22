@@ -14,20 +14,32 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            overflow: hidden;
         }
         video {
             border: 2px solid #ccc;
-            height: 100vh;
-            width: 80%;
-            max-width: 500px;
-            margin-bottom: 10px;
-            position: relative;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         button {
-            position: fixed;
+            position: absolute;
             bottom: 10%;
             left: 50%;
             transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
         }
         canvas {
             display: none; /* Hide the canvas */
@@ -36,7 +48,7 @@
 </head>
 <body>
     <video id="video" autoplay></video>
-    <button id="capture">CapturePhoto </button>
+    <button id="capture">Capture Photo</button>
     <canvas id="canvas"></canvas>
 
     <script>
@@ -72,11 +84,10 @@
                     })
                     .catch(error => {
                         console.error('Upload failed:', error);
-                        alert('er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
+                        alert('Er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
                     });
             }, 'image/png');
         });
     </script>
 </body>
 </html>
-
