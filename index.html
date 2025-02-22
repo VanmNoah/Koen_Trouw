@@ -24,6 +24,20 @@
             top: 0;
             left: 0;
         }
+        .icon-button {
+            position: absolute;
+            top: 10%;
+            left: 90%;
+            transform: translate(-50%, -50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            color: #007bff;
+        }
+        .icon-button:hover {
+            color: #0056b3; /* Darker blue on hover */
+        }
         button {
             position: absolute;
             bottom: 10%;
@@ -40,13 +54,6 @@
         button:hover {
             background-color: #0056b3; /* Darker blue on hover */
         }
-        .controls {
-            position: absolute;
-            bottom: 20%;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
         canvas {
             display: none; /* Hide the canvas */
         }
@@ -54,34 +61,50 @@
 </head>
 <body>
     <video id="video" autoplay></video>
-    <div class="controls">
-        <button id="capture">📷 Capture</button>
-        <button id="switchCamera">🔄 Switch</button>
-        <button id="record">🎥 Record</button>
-    </div>
+    <button id="capture">Capture Photo</button>
     <canvas id="canvas"></canvas>
+    <button class="icon-button" id="switchCamera">➡️</button> <!-- Arrow icon for switching cameras -->
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const client = filestack.init('AOo7L2NQUeXoewwx1v7cAz');
-        let currentStream;
-        let facingMode = "user"; // Start with the user camera
+        const switchCameraButton = document.getElementById('switchCamera');
+        let videoDevices = [];
+        let currentCameraIndex = 0;
 
-        // Function to access the camera
-        function accessCamera() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode } })
-                .then(stream => {
-                    currentStream = stream;
-                    video.srcObject = stream;
-                })
-                .catch(error => {
-                    console.error('Error accessing webcam: ', error);
-                });
+        // Function to get video devices
+        async function getVideoDevices() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+            if (videoDevices.length > 0) {
+                startCamera(videoDevices[currentCameraIndex].deviceId);
+            }
         }
 
-        // Access the camera initially
-        accessCamera();
+        // Access the camera
+        async function startCamera(deviceId) {
+            const constraints = {
+                video: {
+                    deviceId: { exact: deviceId }
+                }
+            };
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing webcam: ', error);
+            }
+        }
+
+        // Switch to the next camera when the button is clicked
+        switchCameraButton.addEventListener('click', () => {
+            if (videoDevices.length > 0) {
+                currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length; // Cycle through cameras
+                startCamera(videoDevices[currentCameraIndex].deviceId);
+            }
+        });
 
         // Capture photo when button is clicked
         document.getElementById('capture').addEventListener('click', () => {
@@ -97,28 +120,17 @@
                 // Upload to Filestack
                 client.upload(file)
                     .then(response => {
-                        alert('The photo was successfully uploaded! The photos will be shared later.');
+                        alert('De foto is succesvol geupload! De fotos worden achteraf met iedereen gedeeld.');
                     })
                     .catch(error => {
                         console.error('Upload failed:', error);
-                        alert('Something went wrong :( ! If this happens again, please contact Noah!');
+                        alert('Er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
                     });
             }, 'image/png');
         });
 
-        // Switch camera when button is clicked
-        document.getElementById('switchCamera').addEventListener('click', () => {
-            facingMode = (facingMode === "user") ? "environment" : "user"; // Toggle camera
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop()); // Stop current stream
-            }
-            accessCamera(); // Access the new camera
-        });
-
-        // Record video (placeholder for functionality)
-        document.getElementById('record').addEventListener('click', () => {
-            alert('Recording functionality is not implemented yet.');
-        });
+        // Get video devices when the page loads
+        getVideoDevices();
     </script>
 </body>
 </html>
