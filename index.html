@@ -40,6 +40,13 @@
         button:hover {
             background-color: #0056b3; /* Darker blue on hover */
         }
+        .controls {
+            position: absolute;
+            bottom: 20%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
         canvas {
             display: none; /* Hide the canvas */
         }
@@ -47,23 +54,34 @@
 </head>
 <body>
     <video id="video" autoplay></video>
-    <button id="capture">Capture Photo</button>
+    <div class="controls">
+        <button id="capture">📷 Capture</button>
+        <button id="switchCamera">🔄 Switch</button>
+        <button id="record">🎥 Record</button>
+    </div>
     <canvas id="canvas"></canvas>
 
     <script>
-        // Access the camera
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const client = filestack.init('AOo7L2NQUeXoewwx1v7cAz');
+        let currentStream;
+        let facingMode = "user"; // Start with the user camera
 
-        // Get access to the user's webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(error => {
-                console.error('Error accessing webcam: ', error);
-            });
+        // Function to access the camera
+        function accessCamera() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                })
+                .catch(error => {
+                    console.error('Error accessing webcam: ', error);
+                });
+        }
+
+        // Access the camera initially
+        accessCamera();
 
         // Capture photo when button is clicked
         document.getElementById('capture').addEventListener('click', () => {
@@ -79,13 +97,27 @@
                 // Upload to Filestack
                 client.upload(file)
                     .then(response => {
-                        alert('De foto is succesvol geupload! De fotos worden achteraf met iedereen gedeeld.');
+                        alert('The photo was successfully uploaded! The photos will be shared later.');
                     })
                     .catch(error => {
                         console.error('Upload failed:', error);
-                        alert('Er is iets fout gegaan :( ! Indien dit nog eens gebeurt spreek Noah aan!');
+                        alert('Something went wrong :( ! If this happens again, please contact Noah!');
                     });
             }, 'image/png');
+        });
+
+        // Switch camera when button is clicked
+        document.getElementById('switchCamera').addEventListener('click', () => {
+            facingMode = (facingMode === "user") ? "environment" : "user"; // Toggle camera
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop()); // Stop current stream
+            }
+            accessCamera(); // Access the new camera
+        });
+
+        // Record video (placeholder for functionality)
+        document.getElementById('record').addEventListener('click', () => {
+            alert('Recording functionality is not implemented yet.');
         });
     </script>
 </body>
