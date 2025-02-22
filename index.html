@@ -14,13 +14,13 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
+            overflow: hidden;
         }
         video {
-            border: 2px solid #ccc;
-            height: 100vh; /* Full height */
-            width: 100vw; /* Full width */
-            object-fit: contain; /* Maintain aspect ratio without zooming */
-            position: absolute; /* Position it to the top */
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            position: absolute;
             top: 0;
             left: 0;
         }
@@ -56,20 +56,14 @@
         const canvas = document.getElementById('canvas');
         const client = filestack.init('AOo7L2NQUeXoewwx1v7cAz');
 
-        // Get access to the user's webcam with constraints
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'user', // Use the front camera
-                width: { ideal: 1280 }, // Set ideal width
-                height: { ideal: 720 } // Set ideal height
-            }
-        })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(error => {
-            console.error('Error accessing webcam: ', error);
-        });
+        // Get access to the user's webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('Error accessing webcam: ', error);
+            });
 
         // Capture photo when button is clicked
         document.getElementById('capture').addEventListener('click', () => {
